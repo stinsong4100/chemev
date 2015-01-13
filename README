@@ -1,0 +1,26 @@
+# Generate yields:
+
+python setup.py
+
+
+
+# Generate Woosley & Weaver (1995) CCSNe yields (with half of the yields for
+# Fe-peak elements):
+
+python setup.py ww95 
+
+
+# Run the code
+python flexce.py param0.txt
+
+
+# Change the parameters of the code
+# 1. create a new param<N>.txt file (where <N> is a number)
+# 2. edit param<N>.txt
+# 3. re-run the code:
+python flexce.py param<N>.txt
+
+
+# Plot [O/Fe]-[Fe/H]
+cd plots
+python plot_ofe_mdf.py
