@@ -1,0 +1,153 @@
+J/A+A/341/709       Chemical spiral galaxies models          (Lindner+ 1999)
+================================================================================
+Chemically consistent evolution of galaxies:
+Spiral galaxy models compared to DLA systems
+       Lindner U., Fritze - von Alvensleben U., Fricke K.J.
+      <Astron. Astrophys. 341, 709 (1999)>
+      =1999A&A...341..709L      (SIMBAD/NED BibCode)
+================================================================================
+ADC_Keywords: Abundances ; Models, evolutionary
+Keywords: galaxies: evolution - quasars: absorption lines
+
+Abstract:
+    We have extended our chemical and cosmological galaxy evolution model
+    to calculate the abundance evolution for altogether 16 different
+    elements in spiral galaxies in a chemically consistent way which is a
+    considerable step towards a more realistic galaxy modeling. All
+    observed element abundances in Damped Lyman {alpha} (LDA) systems have
+    been compiled.
+
+File Summary:
+--------------------------------------------------------------------------------
+  FileName     Lrecl  Records   Explanations
+--------------------------------------------------------------------------------
+ReadMe            80        .   This file
+table5.dat       109       81   SNII yields calculated by Woosley & Weaver
+                                 (1995ApJS..101..181W) for models A, B and C
+                                 (see text) and two different metallicities
+                                 Z=Z_{sun}_ and Z=0.01 Z_{sun}_.
+table6.dat       100       12   Stellar yields for various stellar masses and
+                                 three different initial metallicities
+                                 Z=1, 0.2 and 0.05Z_{sun}_ from van den Hoek &
+                                 Groenewegen (1997, Cat. <J/A+AS/123/305>)
+table7.dat        27       26   Stellar lifetimes for two different initial
+                                 metallicities.
+table8.dat        33       15   SNII remnants of various progenitor masses,
+                                 five different initial metallicities Z and
+                                 three explosion models (A, B and C) from Table3
+                                 in Woosley & Weaver (1995ApJS..101..181W)
+table9.dat        19       18   Remnants for different stellar masses and
+                                 initial metallicities (Z=1, 0.2 and
+                                 0.05Z_{sun}_) from van den Hoek & Groenewegen
+                                 (1997, Cat. <J/A+AS/123/305>)
+tables.tex       175      265   LaTeX version of the tables
+tables.ps         72      632   PostScript version of the tables
+--------------------------------------------------------------------------------
+
+See also:
+   J/A+AS/123/305 : Yields of intermediate mass stars (van den Hoek+ 1997)
+
+Byte-by-byte Description of file: table5.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units     Label    Explanations
+--------------------------------------------------------------------------------
+       1  A1    ---       Note     [AS] A: model A; S: SNIa (1)
+   3-  7  E5.0  Sun       Z        ? Initial metallicity
+   9- 10  I2    solMass   Mass     ? Stellar mass
+  11- 12  A2    ---     n_Mass     [** ] Note on model (2)
+  14- 18  F5.2  ---       H         H yield (3)
+  20- 24  F5.2  ---       He        He yield (3)
+  26- 29  F4.3  ---       C         C yield (3)
+  31- 34  F4.3  ---       N         N yield (3)
+  36- 40  F5.3  ---       O         O yield (3)
+  42- 45  F4.3  ---       Mg        Mg yield (3)
+  47- 50  F4.3  ---       Al        Al yield (3)
+  52- 55  F4.3  ---       Si        Si yield (3)
+  57- 60  F4.3  ---       S         S yield (3)
+  62- 65  F4.3  ---       Ar        Ar yield (3)
+  67- 70  F4.3  ---       Ca        Ca yield (3)
+  72- 75  F4.3  ---       Fe        Fe yield (3)
+  77- 80  F4.3  ---       Ni        Ni yield (3)
+  82- 86  F5.4  ---       Zn        Zn yield (3)
+  88- 92  F5.4  ---       Cr        Cr yield (3)
+  94- 98  F5.4  ---       Mn        Mn yield (3)
+ 100-104  F5.2  solMass   Meject    ? Total ejected mass (4)
+ 106-109  F4.2  %         Diff      ? Difference between Meject and the sum of
+                                       ejecta given in this table for elements
+                                       H, He, ..., Mn
+--------------------------------------------------------------------------------
+Note (1): In the case of Mass=25m_{sun}_ yields calculated from model A for all
+           five different metallicities Z=1, 0.1, 0.01, 10^-4^ and 0Z_{sun}_
+           are given.
+           SNIa data are from Nomoto et al. (1997Sci...276.1378N)
+            deflagration model W7
+Note (2): *: Model B
+         **: Model C
+Note (3): Normalized formed and ejected mass of element integrated over
+           the stellar lifetime
+Note (4): Meject is the total ejected mass as given by Woosley & Weaver
+           (1995ApJS..101..181W).
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: table6.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1-  3  F3.1  solMass Mass      Stellar mass
+   5- 10  F6.3  ---     H1        H  yield for Z=1.0 Z_{sun}_
+  12- 17  F6.3  ---     H2        H  yield for Z=0.2 Z_{sun}_
+  19- 24  F6.3  ---     H3        H  yield for Z=0.05Z_{sun}_
+  26- 30  F5.3  ---     He1       He yield for Z=1.0 Z_{sun}_
+  32- 36  F5.3  ---     He2       He yield for Z=0.2 Z_{sun}_
+  38- 42  F5.3  ---     He3       He yield for Z=0.05Z_{sun}_
+  44- 49  F6.3  ---     C1        C  yield for Z=1.0 Z_{sun}_
+  51- 56  F6.3  ---     C2        C  yield for Z=0.2 Z_{sun}_
+  58- 62  F5.3  ---     C3        C  yield for Z=0.05Z_{sun}_
+  64- 68  F5.3  ---     N1        N  yield for Z=1.0 Z_{sun}_
+  70- 74  F5.3  ---     N2        N  yield for Z=0.2 Z_{sun}_
+  76- 80  F5.3  ---     N3        N  yield for Z=0.05Z_{sun}_
+  82- 87  F6.3  ---     O1        O  yield for Z=1.0 Z_{sun}_
+  89- 94  F6.3  ---     O2        O  yield for Z=0.2 Z_{sun}_
+  96-100  F5.3  ---     O3        O  yield for Z=0.05Z_{sun}_
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: table7.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units     Label     Explanations
+--------------------------------------------------------------------------------
+       1  A1    ---     l_Mass      [~] Limit flag on mass
+   2-  6  F5.2  solMass   Mass      Stellar mass
+       8  A1    ---     l_Tau1      [~] Limit flag on Tau1
+   9- 17  E9.3  Gyr       Tau1      Stellar lifetime for Z=1.00Z_{sun}_
+  19- 27  E9.3  Gyr       Tau2      Stellar lifetime for Z=0.05Z_{sun}_
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: table8.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units     Label     Explanations
+--------------------------------------------------------------------------------
+   1-  2  I2    solMass   Mass      Stellar mass
+   3-  4  A2    ---     n_Mass      [** ] Note on model (1)
+   6- 10  F5.2  solMass   R1        SN II remnant for Z=1.0000Z_{sun}_
+  12- 15  F4.2  solMass   R2        SN II remnant for Z=0.1000Z_{sun}_
+  17- 20  F4.2  solMass   R3        SN II remnant for Z=0.0100Z_{sun}_
+  22- 26  F5.2  solMass   R4        SN II remnant for Z=0.0001Z_{sun}_
+  28- 32  F5.2  solMass   R5        SN II remnant for Z=0.0000Z_{sun}_
+--------------------------------------------------------------------------------
+Note (1): *: Model B
+         **: Model C
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: table9.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units     Label     Explanations
+--------------------------------------------------------------------------------
+   1-  4  F4.2  solMass   Mass      Mass
+   6-  9  F4.2  solMass   R1        Remnant for Z=1.0Z_{sun}_
+  11- 14  F4.2  solMass   R2        ? Remnant for Z=0.2Z_{sun}_
+  16- 19  F4.2  solMass   R3        ? Remnant for Z=0.05Z_{sun}_
+--------------------------------------------------------------------------------
+
+Acknowledgements: Ulrich Lindner <ulindner@coma.uni-sw.gwdg.de>
+================================================================================
+(End)                                         Patricia Bauer [CDS]   04-Dec-1998
