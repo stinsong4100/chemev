@@ -193,14 +193,8 @@ extra_link_args = []
 
 incdir = numpy.distutils.misc_util.get_numpy_include_dirs()
 
-interpolate3d_pyx = Extension('pynbody.analysis._interpolate3d',
-                              sources = ['pynbody/analysis/_interpolate3d.pyx'],
-                              include_dirs=incdir,
-                              extra_compile_args=openmp_args,
-                              extra_link_args=openmp_args)
 
-
-ext_modules+=[interpolate3d_pyx]
+#ext_modules+=[interpolate3d_pyx]
 
 if not build_cython :
     for mod in ext_modules :
@@ -242,24 +236,24 @@ dist = setup(name = 'chemev',
              description = 'Modular python Chemical Evolution Module',
              url = 'https://github.com/chemev/chemev/releases',
              package_dir = {'chemev/': ''},
-             packages = ['chemev', 'chemev/analysis', 'chemev/bc_modules',
-                         'chemev/plot', 'chemev/gravity', 'chemev/chunk', 'chemev/sph',
-                         'chemev/snapshot', 'chemev/bridge' ],
+             packages = ['chemev'],#, 'chemev/analysis', 'chemev/bc_modules',
+                         #'chemev/plot', 'chemev/gravity', 'chemev/chunk', 'chemev/sph',
+                         #'chemev/snapshot', 'chemev/bridge' ],
 # treat weave .c files like data files since weave takes
 # care of their compilation for now
 # could make a separate extension for them in future
-             package_data={'chemev': ['default_config.ini'],
-                           'chemev/sph': ['sph_image.c','sph_to_grid.c',
-                                        'sph_spectra.c'],
-                           'chemev/analysis': ['cmdlum.npz',
-                                                'ionfracs.npz',
-                                                'interpolate.c',
-                                                'interpolate3d.c',
-                                                'com.c',
-                                                'CAMB_WMAP7',
-                                                'cambtemplate.ini'],
-                           'chemev/plot': ['tollerud2008mw'],
-                           'chemev/gravity': ['direct.c']},
+             package_data={'chemev': ['default_config.ini']},
+                          # 'chemev/sph': ['sph_image.c','sph_to_grid.c',
+#                                        'sph_spectra.c'],
+#                           'chemev/analysis': ['cmdlum.npz',
+ #                                               'ionfracs.npz',
+  #                                              'interpolate.c',
+   #                                             'interpolate3d.c',
+    #                                            'com.c',
+     #                                           'CAMB_WMAP7',
+      #                                          'cambtemplate.ini'],
+       #                    'chemev/plot': ['tollerud2008mw'],
+        #                   'chemev/gravity': ['direct.c']},
              ext_modules = ext_modules,
              cmdclass = cmdclass,
              classifiers = ["Development Status :: 4 - Beta",

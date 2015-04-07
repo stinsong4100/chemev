@@ -1,28 +1,23 @@
 import numpy as np, pickle, pdb
 
-infiles = ['nonrotateZ0.txt','nonrotateZsol.txt']
 elements = ['H','He','C','N','O','Mg','Al','Si','S','Ar','Ca','Fe','Ni','Zn','Cr','Mn']
 
-isotope_yield={}
 element_yield={}
 
-prods = np.genfromtxt(infile,usecols=np.arange(2,len(elements)+1),
-                      names=elements)
-for iz,infile in enumerate(infiles):
-    
-#,names=['%d m'%m for m in masses])
-    isos = np.genfromtxt(infile,usecols=(0),dtype='string')
-    
-    for ii,iso in enumerate(isos):
-        if iso not in decay_products: continue
-        if decay_products[iso] not in isotope_yield: 
-            isotope_yield[decay_products[iso]] = np.zeros((len(Zs),len(masses)))
-        isotope_yield[decay_products[iso]][iz,:] += prods[ii]
-        
-    for iso in isotope_yield.keys():
-        element = iso.split('^')[-1]
-        if iz==0: element_yield[element] = np.zeros((len(Zs),len(masses)))
-        element_yield[element] += isotope_yield[iso][iz,:]
+prods = np.genfromtxt('lindnerSummary.txt',usecols=np.arange(2,len(elements)+2),
+                      names=elements,comments='A',skip_footer=26)
+Z,mass = np.genfromtxt('lindnerSummary.txt',usecols=(0,1),unpack=True,comments='A',
+                       skip_footer=26)
+Zs = np.unique(Z)
+nZs = len(Zs)
+masses = np.unique(mass)
+metals = []
+nms = len(masses)
+for ie,el in enumerate(elements):
+    element_yield[el] = np.zeros((nZs,nms))
+    for iz in np.arange(nZs):
+        if ie==0: metals.append( np.unique(Z[iz*nms:(iz+1)*nms])[0])
+        element_yield[el][iz,:] += prods[el][iz*nms:(iz+1)*nms]
 
-pickle.dump({'isotope_yield':isotope_yield,'element_yield':element_yield,
-             'masses':masses,'Zs':Zs},open('limongi12.dat','w'))
+pickle.dump({'element_yield':element_yield,
+             'masses':masses,'Zs':np.array(metals)},open('lindner99.dat','w'))

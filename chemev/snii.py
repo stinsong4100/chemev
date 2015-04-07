@@ -9,7 +9,7 @@ import numpy as np
 import logging
 
 def snii(tnow, stars):
-
+    print 'do nothing'
 
 def ira(tnow, stars):
     """

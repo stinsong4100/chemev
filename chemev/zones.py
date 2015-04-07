@@ -8,7 +8,7 @@ in the chemical evolution models.
 
 import numpy as np
 import logging
-from . import star.Star
+from . import star#.Star
 
 class Zone():
 
@@ -35,9 +35,9 @@ class Zone():
         Loop through all the stars in the zone and enrich all the elements
         we are tracing for one timestep.
         """
-        self.abunds,self.Z += snii(tnow, self._stars)
-        self.abunds,self.Z += snia(tnow, self._stars)
-        self.abunds,self.Z += agb(tnow, self._stars)
+#        self.abunds,self.Z += snii(tnow, self._stars)
+#        self.abunds,self.Z += snia(tnow, self._stars)
+#        self.abunds,self.Z += agb(tnow, self._stars)
 
     def outflow():
         """

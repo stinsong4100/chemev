@@ -1,6 +1,6 @@
 """
 starlifetime
-====
+============
 
 Implements the starlifetime functions
 """
@@ -35,11 +35,8 @@ def starMass(starLifetime, Z):
     '''Use quadratic equation to find masses corresponding to stellar lifetime'''
 #    if(starLifetime <= 0.0): return 1000         #Time can be zero
 
-    a0,a1,a2=coefInit(Z)
-    c = a0;
-    c -= np.log10(starLifetime);
-    b = a1;
-    a = a2;
+    c,b,a=coefInit(Z)
+    c -= np.log10(starLifetime)
 #    if(b*b - 4*a*c < 0.0): return 1000 # time is too small for fitting formula
 
     logStarMass = (-b - np.sqrt(b*b - 4*a*c))/(2*a);
