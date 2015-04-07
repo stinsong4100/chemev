@@ -19,3 +19,4 @@ class Star():
         self.tform = tform
         self.Z = Z
         self.abunds = abunds
+

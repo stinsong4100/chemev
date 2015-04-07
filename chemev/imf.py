@@ -57,11 +57,15 @@ class Chabrier():
             dCumM = np.zeros(len(mass))
             xmina=np.zeros(len(mass))
             dCumM[mass > mmax] = 0.0
-            dCumM[mass >= self.mc] = self.a2/(self.b2+1.0)*(mmax**(self.b2+1.0) - \
-                               mass**(self.b2+1.0))/np.log(10.0)
-            xmina[mass > self.mc] = np.log10(mass)
-            xmina[mass < self.mc] = np.log10(self.mc)
-            ilm = (mass >= self.mc) & (mass < self.m2)
+            im2 = (mass >= self.m2)
+            ilm = mass < self.m2
+            dCumM[im2] = self.a2/(self.b2+1.0)*(mmax**(self.b2+1.0) - \
+                               mass[im2]**(self.b2+1.0))/np.log(10.0)
+            dCumM[ilm] = self.a2/(self.b2+1.0)*(mmax**(self.b2+1.0) - \
+                                     self.m2**(self.b2+1.0))/np.log(10.0)
+            imc = (mass > self.mc) 
+            xmina[imc] = np.log10(mass[imc])
+            xmina[mass <= self.mc] = np.log10(self.mc)
             dCumM[ilm]+=np.array([scipy.integrate.romberg(self.IMFIntlogm, 
                                                           xmin,np.log10(self.m2)) 
                                   for xmin in xmina[ilm]])
@@ -72,7 +76,9 @@ class Chabrier():
             elif (mass > self.m2):return self.a2/(self.b2+1.0)*(mmax**(self.b2+1.0)-\
                                mass**(self.b2+1.0))/np.log(10.0)
             else:
-                xmin=np.max(self.mc,mass)
+                if mass < self.mc: xmin=np.log10(self.mc)
+                else: xmin = np.log10(mass)
+
                 return self.a2/(self.b2+1.0)*(mmax**(self.b2+1.0)-\
                            self.m2**(self.b2+1.0))/np.log(10.0) + \
                            scipy.integrate.romberg(self.IMFIntlogm, 
@@ -84,46 +90,64 @@ class Chabrier():
         if isinstance(mass,np.ndarray):
             dCumN = np.zeros(len(mass))
             im2 = (mass >= self.m2)
+            ilm = mass < self.m2
             dCumN[im2]= self.a2/(self.b2)*(mmax**(self.b2) - 
                                            mass[im2]**(self.b2))/np.log(10.0)
+            dCumN[ilm]= self.a2/(self.b2)*(mmax**(self.b2) - 
+                                           self.m2**(self.b2))/np.log(10.0)
             ymin = np.zeros(len(mass))
-            imc = (mass > self.mc) 
+            imc = (mass >= self.mc) 
             ymin[imc] = (np.log10(mass[imc]) - 
                          np.log10(self.mc))/(M_SQRT2*self.sigma);
             ymin[mass < self.mc] = 0.0
-            ilm = (mass >= self.mc) & (mass < self.m2)
             dCumN[ilm] += self.a1*self.sigma*np.sqrt(np.pi)*M_SQRT1_2*(erf(ymax) - 
                                                                     erf(ymin[ilm]))
             return dCumN
         else:
             dCumN = 0.0
             if (mass > mmax): return dCumN
-            elif (mass > self.m2):return self.a2/(self.b2)*(mmax**(self.b2) - 
+            if (mass > self.m2):return self.a2/(self.b2)*(mmax**(self.b2) - 
                                             mass**(self.b2))/np.log(10.0)
-            else:
-                if (mass > self.mc): ymin =(np.log10(mass) - 
-                                      np.log10(self.mc))/(M_SQRT2*self.sigma)
-                else: ymin = 0.0
-                return self.a2/(self.b2)*(mmax**(self.b2) - 
-                                          self.mc**(self.b2))/np.log(10.0) + \
-                 self.a1*self.sigma*np.sqrt(np.pi)*M_SQRT1_2*(erf(ymax) - erf(ymin))
+            dCumN = self.a2/(self.b2)*(mmax**(self.b2) - 
+                                       self.m2**(self.b2))/np.log(10.0)
+#            ymax = (np.log10(self.m2) - np.log10(self.mc))/(M_SQRT2*self.sigma)
+            if (mass > self.mc): 
+                ymin =(np.log10(mass)-np.log10(self.mc))/(M_SQRT2*self.sigma)
+            else: ymin = 0.0
+            return dCumN+self.a1*self.sigma*np.sqrt(np.pi)* \
+                M_SQRT1_2*(erf(ymax) - erf(ymin))
 
 
-class Kroupa93():
-    """
-    Chabrier IMF
-    """
+class PiecewisePowerLaw():
+    '''
+    Generic piecewise power law IMF.  We allow for 3 pieces.
+    By default, it is set to Kroupa 2001 values.  Kroup 2001 only has 2
+    pieces, so pieces 2 and 3 are identical.
+    parameters from Kroupa 2001, equation 2, and ignoring brown dwarfs,
+    Also normalized so that the mass integral is 1. 
+    NOTE BENE: Kroupa 2001 has a revised IMF in section 6.2 which is
+    different than this; however, below is what is used as the default in
+    Starburst99
+    (http://www.stsci.edu/science/starburst99/mappings/docs/run.html)
+    with the exception that the low mass cutoff is .1 instead of the .08
+    below and in the Kroupa paper.
+    To convert to the IMF(log10(M)) convention of Miller-Scalo, we
+    increase the power law by 1 and multiply the coefficient by
+    ln(10.0). See, eg., Chabrier 2003, eq. 2 
+
+    '''
+
     def __init__(self):
-        self.a1=0.3029*1.86606 
+        self.a1=0.22038*2.0*np.log(10.0)
         self.b1=-0.3 
         self.m1=0.08 
-        self.a2=0.3029
-        self.b2=-1.2 
+        self.a2=0.22038*np.log(10.0)
+        self.b2=-1.3
         self.m2=0.5 
-        self.a3=0.3029 
-        self.b3=-1.7 
+        self.a3=0.22038*np.log(10.0)
+        self.b3=-1.3
         self.m3=1.0
-        
+
     def imf(self,mass):
         dIMF[mass > self.m3] = self.a3*mass**self.b3
         dIMF[(mass <= self.m3) & (mass > self.m2)] = self.a2*mass**self.b2
@@ -139,6 +163,23 @@ class Kroupa93():
         # Don't worry about masses below 1 Msun 
         return self.a3/(self.b3)*(mmax**(self.b3) - mass**(self.b3))
 
+    
+
+class Kroupa93(PiecewisePowerLaw):
+    """
+    Kroupa 1993 IMF
+    """
+    def __init__(self):
+        self.a1=0.3029*1.86606 
+        self.b1=-0.3 
+        self.m1=0.08 
+        self.a2=0.3029
+        self.b2=-1.2 
+        self.m2=0.5 
+        self.a3=0.3029 
+        self.b3=-1.7 
+        self.m3=1.0
+        
 
 def calc_lum(mass,Bresnan=False,Chabrier=False):
     if Chabrier: 
