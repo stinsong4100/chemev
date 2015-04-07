@@ -2,6 +2,7 @@ import numpy as np, pickle, pdb
 from chemev import starlifetime as slt
 import chemev
 
+mass_weighted_yields = {}
 imf = chemev.imf.Chabrier()
 
 dat = pickle.load(open('limongi12/limongi12.dat'))
@@ -21,5 +22,8 @@ for el in el_yield.keys():
     yield_at_masstimes = np.interp(time_masses,masses,el_yield[el][iZ,:])
     summed_yields = np.trapz(yield_at_masstimes,x=np.vstack([time_masses[1:],
                                                             time_masses[:-1]]).T)
+    mass_weighted_yields[el] = mass_fractions * summed_yields
 
+pickle.dump({'mass_weighted_yields':mass_weighted_yields,'times':output_times},
+            open('time_yields.pck','w'))
 pdb.set_trace()
