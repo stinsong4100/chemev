@@ -14,8 +14,8 @@ class Star():
     Defines star class.
     """
 
-    def _init_(self,mass,tform,Z,abunds):
-        self.mass = mass
+    def _init_(self,tform,zonemass,zonearea,Z,abunds):
+        self.mass = star_form_efficiency * zonemass#/zonearea
         self.tform = tform
         self.Z = Z
         self.abunds = abunds

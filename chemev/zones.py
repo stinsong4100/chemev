@@ -16,19 +16,21 @@ class Zone():
     Generic class representing a zone.
     """
 
-    def __init__(self,radius,mass,Z,abunds,*args):
-        self.r = radius
+    def __init__(self,min_radius,max_radius,mass,Z,abunds,*args):
+        self.min_r = min_radius
+        self.max_r = max_radius
+        self.area = np.pi*max_radius**2 - np.pi*min_radius**2
         self.mass = mass
         self.abunds = abunds
         self.Z = Z
-        self._stars = np.array([])
+        self._stars = []
 
     def add_star():
         """
         Adds a new star to the zone.
         """
         
-        self._stars.append(Star(mass,now,self.Z,self.abunds))
+        self._stars.append(Star(now,self.mass,self.area,self.Z,self.abunds))
 
     def enrich():
         """
@@ -55,4 +57,4 @@ def create_zones(n):
     Initializes zone creation, automates creating zones in a disk.
     """
     
-    disk_zones = [Zone(i*dr) for i in range(n)]
+    return [Zone(i*dr) for i in range(n)]
