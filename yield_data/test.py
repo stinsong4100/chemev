@@ -16,3 +16,10 @@ print '9:',chab.cum_mass(9)
 print '0:',chab.cum_mass(0)
 print '4,7,9,0:',chab.cum_mass([4,7,9,0])
 
+print 'IMFs:'
+print '4:',chab.imf(4)
+print '7:',chab.imf(7)
+print '9:',chab.imf(9)
+print '0:',chab.imf(0)
+print '4,7,9,0:',chab.imf([4,7,9,0])
+

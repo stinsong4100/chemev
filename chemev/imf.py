@@ -29,11 +29,14 @@ class Chabrier():
         self.m2=1.0
 
     def imf(self,mass):
-        if mass is np.array: 
+        if hasattr(mass, "__len__"): mass = np.array(mass)
+        if isinstance(mass,np.ndarray):
             dIMF = np.zeros(len(mass))
-            dIMF[mass > self.m2] = self.a2*mass**self.b2;
-            dIMF[(mass <= self.m2) & (mass > self.mc)] = \
-                self.a1 * np.exp(- (np.log10(mass) - 
+            im2 = (mass >= self.m2)
+            dIMF[im2] = self.a2*mass[im2]**self.b2
+            ilm = (mass <= self.m2) & (mass > self.mc)
+            dIMF[ilm] = \
+                self.a1 * np.exp(- (np.log10(mass[ilm]) - 
                                     np.log10(self.mc))**2.0
                                    /(2.0*self.sigma*self.sigma))
             dIMF[mass < self.mc] = 0.0
