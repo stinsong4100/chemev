@@ -18,7 +18,7 @@ el_trans = {'p':'^1^H','d':'^2^H','he3':'^3^He','he4':'^4^He','li7':'^7^Li',
 
 for iz,infile in enumerate(infiles):
     
-    mis,mets,mfs,prods = np.genfromtxt(infile,usecols=(0,1,2,5),unpack=True)
+    mis,mets,mfs,prods = np.genfromtxt(infile,usecols=(0,1,2,6),unpack=True)
     isos = np.genfromtxt(infile,usecols=(3),dtype='string')
     dum_masses, imasses = np.unique(mis,return_index=True)
     Z = np.unique(mets)
@@ -44,8 +44,7 @@ for iz,infile in enumerate(infiles):
     for iso in isotope_yield.keys():
         element = iso.split('^')[-1]
         if iz==0: element_yield[element] = np.zeros((len(Zs),len(masses)))
-        iMass = np.argwhere(masses == mis[ii])[0]
-        element_yield[element] += isotope_yield[iso][iZ,iMass]
+        element_yield[element] += isotope_yield[iso][iZ,:]
 
 element_yield['m_ej'] = isotope_yield['m_ej']
 

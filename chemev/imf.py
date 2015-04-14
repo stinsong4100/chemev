@@ -33,10 +33,10 @@ class Chabrier():
         if isinstance(mass,np.ndarray):
             dIMF = np.zeros(len(mass))
             im2 = (mass >= self.m2)
-            dIMF[im2] = self.a2*mass[im2]**self.b2
+            dIMF[im2] = self.a2*mass[im2]**(self.b2-1)
             ilm = (mass <= self.m2) & (mass > self.mc)
             dIMF[ilm] = \
-                self.a1 * np.exp(- (np.log10(mass[ilm]) - 
+                self.a1 / mass[ilm] * np.exp(- (np.log10(mass[ilm]) - 
                                     np.log10(self.mc))**2.0
                                    /(2.0*self.sigma*self.sigma))
             dIMF[mass < self.mc] = 0.0
@@ -44,10 +44,10 @@ class Chabrier():
             return dIMF
         else: 
             if (mass > mmax): return 0.0
-            elif (mass > self.m2): return self.a2*mass**self.b2;
-            elif (mass > self.mc): return self.a1 * np.exp(- (np.log10(mass) - 
-                            np.log10(self.mc))**2.0
-                            /(2.0*self.sigma*self.sigma))
+            elif (mass > self.m2): return self.a2*mass**(self.b2-1)
+            elif (mass>self.mc): return self.a1/mass*np.exp(-(np.log10(mass)-
+                                                  np.log10(self.mc))**2.0
+                                                  /(2.0*self.sigma*self.sigma))
             else: return 0.0
 
     def IMFIntlogm(self,logMass):

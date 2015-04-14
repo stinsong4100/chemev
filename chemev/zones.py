@@ -25,12 +25,12 @@ class Zone():
         self.Z = Z
         self._stars = []
 
-    def form_star(self,time,sf_mode='sim',mass=mass):
+    def form_star(self,time,sf_mode='sim',mass=None):
         """
         Adds a new star to the zone.
         """
         
-        self._stars.append(Star(time,self.Z,self.abunds,sf_mode=sf_mode,mass))
+        self._stars.append(Star(time,self.Z,self.abunds,sf_mode=sf_mode,mass=mass))
 
     def enrich(self,time):
         """
@@ -47,7 +47,7 @@ class Zone():
             self.abunds[el]=(self.abunds[el]*self.mass + (mstars*ej_abunds).sum()) / self.mass
         rel_masses = scipy.ndimage.map_coordinates(enrich_table['m_ej'],zip(iages,iZs),order=1)
         self.mass += (rel_masses*mstars).sum()
-        [star.mass-=star.mass*rel_masses[istar] for istar,star in enumerate(self._stars)]
+#        [star.mass=star.mass-star.mass*rel_masses[istar] for istar,star in enumerate(self._stars)]
 
 #        self.abunds,self.Z += snii(tnow, self._stars)
 #        self.abunds,self.Z += snia(tnow, self._stars)

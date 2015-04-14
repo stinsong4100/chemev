@@ -5,26 +5,53 @@ import chemev
 mass_weighted_yields = {}
 imf = chemev.imf.Chabrier()
 
-dat = pickle.load(open('limongi12/limongi12.dat'))
+#Limongi only has Zsol and Z=0
+#snii_dat = pickle.load(open('limongi12/limongi12.dat'))
+snii_dat = pickle.load(open('ww95/lindner99.dat'))
+agb_dat = pickle.load(open('karakas10/karakas2010.pck'))
 
-el_yield=dat['element_yield']
-masses=dat['masses']
-Zs=dat['Zs']
-iZ=1
+snii_el_yield=snii_dat['element_yield']
+snii_ms=snii_dat['masses']
+snii_Zs=snii_dat['Zs']*0.02
 
-output_times = np.arange(slt.lifetime(80,Zs[iZ]*0.02),slt.lifetime(8,Zs[iZ]*0.02),1e6)
-time_masses=slt.starMass(output_times,0.02)
+agb_el_yield=agb_dat['element_yield']
+agb_ms=agb_dat['masses']
+agb_Zs=agb_dat['Zs']
+
+ej_ms=np.concatenate((agb_ms,snii_ms))
+
+#output_times = np.arange(slt.lifetime(80,Zs[iZ]*0.02),slt.lifetime(8,Zs[iZ]*0.02),1e6)
+#time_masses=slt.starMass(output_times,0.02)
+
 imfTotalMass = imf.cum_mass(0)
-cum_masses = imf.cum_mass(time_masses)
-mass_fractions = (cum_masses[1:] - cum_masses[:-1]) / imfTotalMass
-imf_at_masses = imf.imf(time_masses)
+imf_at_ejms = imf.imf(ej_ms)
 
-for el in el_yield.keys():
-    yield_at_masstimes = np.interp(time_masses,masses,el_yield[el][iZ,:]/masses)
-    summed_yields = np.trapz(yield_at_masstimes*imf_at_masses,x=np.vstack([time_masses[1:],
-                                                            time_masses[:-1]]).T)
-    mass_weighted_yields[el] = summed_yields
-    pdb.set_trace()
+yield_rates = {}
+good_Zs = []
+nZs = np.min([len(snii_Zs),len(agb_Zs)])
+times = np.zeros((nZs,len(ej_ms)-1))
+for iagbZ,met in enumerate(agb_Zs):
+    try:
+        isniiZ = np.argwhere(snii_Zs == met)[0][0]
+    except:
+        continue
+    good_Zs.append(met)
+    mass_times = slt.lifetime(ej_ms,met)
+    time_ranges = np.vstack((mass_times[1:],mass_times[:-1]))
+    times[iagbZ,:] = np.mean(time_ranges,axis=0)
+    time_bin_sizes = np.diff(time_ranges,axis=0)
+    agb_els = np.array(agb_el_yield.keys())
+    good_els = agb_els[np.in1d(agb_el_yield.keys(),snii_el_yield.keys())]
+    for el in good_els:
+        el_yield = np.hstack((agb_el_yield[el][iagbZ,:],snii_el_yield[el][isniiZ,:]))
+        summed_yields = np.trapz(el_yield*imf_at_ejms,
+                                 x=np.vstack([ej_ms[:-1],ej_ms[1:]]).T)
+        try:
+            yield_rates[el][iagbZ,:] = summed_yields / imfTotalMass / time_bin_sizes
+        except KeyError:
+            yield_rates[el]=np.zeros((nZs,len(ej_ms)-1))
+            yield_rates[el][iagbZ,:] = summed_yields / imfTotalMass / time_bin_sizes
 
-pickle.dump({'mass_weighted_yields':mass_weighted_yields,'times':output_times},
+
+pickle.dump({'yield_rates':yield_rates,'times':times,'Zs':good_Zs},
             open('time_yields.pck','w'))
