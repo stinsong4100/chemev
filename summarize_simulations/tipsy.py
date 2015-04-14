@@ -12,8 +12,10 @@ step_time=1e6
 
 # Star formation history from starlog
 sl = pynbody.tipsy.StarLog('g1536.starlog')
-sfh,startimes = np.histogram(sl['tform'].in_units('Gyr'),weights=sl['massform'].in_units('Msol'),
+sfh,startimes = np.histogram(sl['tform'].in_units('Gyr'),
+                             weights=sl['massform'].in_units('Msol'),
                              bins=sim_time/step_time)
+ave_startimes = np.mean(np.vstack((startimes[:-1],startimes[1:])),axis=0)
 
 gastimes=[]
 gasmass=[]
@@ -25,5 +27,5 @@ for df in dfs:
     gasmass.append(dat['mdiskcoolgas'])
 
 
-pickle.dump({'sfh':sfh,'startimes':startimes,'gastimes':gastimes,'gasmass':gasmass},
+pickle.dump({'sfh':sfh,'startimes':ave_startimes,'gastimes':gastimes,'gasmass':gasmass},
             open('g1536_sfh+gas.pck','w'))
