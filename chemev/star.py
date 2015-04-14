@@ -14,7 +14,7 @@ class Star():
     Defines star class.
     """
 
-    def _init_(self,tform,Z,abunds,sf_mode='sim',mass=None,zonemass=None,zonearea=None):
+    def __init__(self,tform,Z,abunds,sf_mode='sim',mass=None,zonemass=None,zonearea=None):
         self.tform = tform
         self.Z = Z
         self.abunds = abunds

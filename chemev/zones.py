@@ -6,9 +6,9 @@ Implements the zone class, which is the fundamental container for gas
 in the chemical evolution models.
 """
 
-import numpy as np
+import numpy as np, scipy.ndimage
 import logging
-from . import star#.Star
+from . import data, starlifetime as slt, star#.Star
 
 class Zone():
 
@@ -23,35 +23,55 @@ class Zone():
         self.mass = mass
         self.abunds = abunds
         self.Z = Z
-        self._stars = []
+        self.stars = np.array([],dtype=data.star_type)
 
     def form_star(self,time,sf_mode='sim',mass=None):
         """
         Adds a new star to the zone.
         """
         
-        self._stars.append(Star(time,self.Z,self.abunds,sf_mode=sf_mode,mass=mass))
+        self.stars = np.append(self.stars,np.array([(time,mass,mass,self.Z)],dtype=data.star_type))
+        #self.stars['tform']=time
+        #self.stars['init_mass']=self.stars['mass']=mass
+        #self.stars['Z']=self.Z
+        #,self.abunds,sf_mode=sf_mode,mass=mass))
 
-    def enrich(self,time):
+    def enrich(self,time,time_step_length):
         """
         Loop through all the stars in the zone and enrich all the elements
         we are tracing for one timestep.
         """
-        ages = np.array([star.tform - time for star in self._stars])
-        iages = np.interp(ages,enrich['times'],np.arange(len(enrich['times'])))
-        Zs = np.array([star.Z for star in self._stars])
-        iZs = np.interp(Zs,enrich['Zs'],np.arange(len(enrich['Zs'])))
-        mstars = np.array([star.mass for star in self._stars])
-        for el in self.abunds.keys():
-            ej_abunds=scipy.ndimage.map_coordinates(enrich_table[el],zip(iages,iZs),order=1)
-            self.abunds[el]=(self.abunds[el]*self.mass + (mstars*ej_abunds).sum()) / self.mass
-        rel_masses = scipy.ndimage.map_coordinates(enrich_table['m_ej'],zip(iages,iZs),order=1)
-        self.mass += (rel_masses*mstars).sum()
-#        [star.mass=star.mass-star.mass*rel_masses[istar] for istar,star in enumerate(self._stars)]
+        ages = self.stars['tform'] - time
+        Zs = self.stars['Z']
+        mstars = self.stars['mass']
 
-#        self.abunds,self.Z += snii(tnow, self._stars)
-#        self.abunds,self.Z += snia(tnow, self._stars)
-#        self.abunds,self.Z += agb(tnow, self._stars)
+        max_snii_age = slt.lifetime(8,0.02)
+        isnii = (ages < max_snii_age)
+        iagb = (ages >= max_snii_age)
+
+        #SNII enrichment
+        iages = np.interp(ages[isnii],data.snii_dat['times'][0],np.arange(len(data.snii_dat['times'][0])))
+        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'],np.arange(len(data.snii_dat['Zs'])))
+        Zmass = 0.0
+        for el in self.abunds.keys():
+            ej_abund_rates=scipy.ndimage.map_coordinates(data.snii_dat['yield_rates'][el],
+                                                    np.vstack((iages,iZs)),
+                                                    order=1)
+            self.abunds[el]=(self.abunds[el]*self.mass + (mstars*ej_abund_rates*time_step_length).sum()) / self.mass
+            if ((el != 'H') or (el !='He')):
+                Zmass+=(mstars*ej_abund_rates*time_step_length).sum()
+
+        TotZmass = self.mass*self.Z + Zmass
+        rel_masses = scipy.ndimage.map_coordinates(data.snii_dat['yield_rates']['m_ej'],
+                                                   np.vstack((iages,iZs)),
+                                                   order=1)
+        self.mass += (rel_masses*mstars*time_step_length).sum()
+        self.Z = TotZmass / self.mass
+        self.stars['mass']-=self.stars['mass']*rel_masses*time_step_length
+
+#        self.abunds,self.Z += snii(tnow, self.stars)
+#        self.abunds,self.Z += snia(tnow, self.stars)
+#        self.abunds,self.Z += agb(tnow, self.stars)
 
     def outflow(self):
         """
@@ -64,9 +84,25 @@ class Zone():
         """
 
 
-def create_zones(n):
+def create_disk_zones(n,max_disk_r=25,disk_gas_mass=1e10,h_r=4,
+                      init_Z=0,init_abunds={'O':0,'Fe':0,'Mg':0}):
     """
     Initializes zone creation, automates creating zones in a disk.
     """
+
+    disk_zones = []
+    dr = max_disk_r / n
+    Sigma0 = disk_gas_mass / (np.pi*2*h_r*(h_r - 
+                                           np.exp(-max_disk_r/h_r)*
+                                           (h_r+max_disk_r)))
+    prefac = np.pi*2.0*h_r*Sigma0
+    for i in range(n):
+        min_r=i*dr
+        max_r=(i+1)*dr
+        zone_mass = prefac*(np.exp(-min_r/h_r)*(h_r+min_r) - 
+                            np.exp(-max_r/h_r)*(h_r+max_r))
     
-    return [Zone(i*dr) for i in range(n)]
+        disk_zones.append(Zone(min_r,max_r,zone_mass,init_Z,init_abunds))
+
+
+    return disk_zones

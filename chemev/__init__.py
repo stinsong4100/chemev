@@ -89,8 +89,9 @@ you can customize the behaviour. See here https://docs.python.org/2/howto/loggin
             print>>f, "This file tells chemev not to reprint the welcome-to-v-0.3 warning"
 
 
+
 # Import subpackages
-from . import engine, snii, starlifetime, zones, agb, enrichment, snia, star, imf
+from . import engine, snii, starlifetime, zones, agb, enrich, snia, star, imf, data
 
 try:
     from . import plot
@@ -107,14 +108,14 @@ imp.reload(snia)
 imp.reload(agb)
 imp.reload(star)
 imp.reload(starlifetime)
-imp.reload(enrichment)
+imp.reload(enrich)
 imp.reload(zones)
+imp.reload(data)
 
 try:
     imp.reload(plot)
 except:
     pass
-
 
 
 #def load(filename, *args, **kwargs):
