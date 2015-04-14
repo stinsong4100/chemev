@@ -10,7 +10,7 @@ import logging
 from . import zones
 
 simfile = 'g1536_sfh+gas.pck'
-def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e8,
+def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
         sf_mode='sim'):
 
     disk_zones = zones.create_disk_zones(n_disk_zones)
@@ -21,8 +21,8 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e8,
     #Read in SFH and disk gas mass evolution
         sfh_dat = pickle.load(open(simfile))
         sfh = np.zeros(len(time_steps))
-        for it,time_step in enumerate(time_steps[:-1]):
-            in_range = (sfh_dat['startimes']*1e9 > time_step) & (sfh_dat['startimes']*1e9 < time_steps[it+1])
+        for it,t_step in enumerate(time_steps[:-1]):
+            in_range = (sfh_dat['startimes']*1e9 > t_step) & (sfh_dat['startimes']*1e9 < time_steps[it+1])
             sfh[it] = sfh_dat['sfh'][in_range].sum()
         gas_mass_ev = np.interp(time_steps,
                                 np.array(sfh_dat['gastimes'])*1e9,

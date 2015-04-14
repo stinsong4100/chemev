@@ -31,43 +31,43 @@ class Zone():
         """
         
         self.stars = np.append(self.stars,np.array([(time,mass,mass,self.Z)],dtype=data.star_type))
-        #self.stars['tform']=time
-        #self.stars['init_mass']=self.stars['mass']=mass
-        #self.stars['Z']=self.Z
-        #,self.abunds,sf_mode=sf_mode,mass=mass))
 
     def enrich(self,time,time_step_length):
         """
         Loop through all the stars in the zone and enrich all the elements
         we are tracing for one timestep.
         """
-        ages = self.stars['tform'] - time
+        ages = time - self.stars['tform']
         Zs = self.stars['Z']
         mstars = self.stars['mass']
 
         max_snii_age = slt.lifetime(8,0.02)
-        isnii = (ages < max_snii_age)
+        min_snii_age = slt.lifetime(80,0.02)
+        isnii = (ages-time_step_length < max_snii_age) & (ages > min_snii_age)
         iagb = (ages >= max_snii_age)
 
         #SNII enrichment
-        iages = np.interp(ages[isnii],data.snii_dat['times'][0],np.arange(len(data.snii_dat['times'][0])))
-        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'],np.arange(len(data.snii_dat['Zs'])))
+        iages = np.interp(ages[isnii],data.snii_dat['times'][0],
+                          np.arange(len(data.snii_dat['times'][0]),dtype='f'))
+        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'],
+                        np.arange(len(data.snii_dat['Zs']),dtype='f'))
         Zmass = 0.0
         for el in self.abunds.keys():
             ej_abund_rates=scipy.ndimage.map_coordinates(data.snii_dat['yield_rates'][el],
                                                     np.vstack((iages,iZs)),
-                                                    order=1)
-            self.abunds[el]=(self.abunds[el]*self.mass + (mstars*ej_abund_rates*time_step_length).sum()) / self.mass
+                                                    order=1,mode='constant',cval=0)
+            self.abunds[el]=(self.abunds[el]*self.mass + (mstars[isnii]*ej_abund_rates*time_step_length).sum()) / self.mass
             if ((el != 'H') or (el !='He')):
-                Zmass+=(mstars*ej_abund_rates*time_step_length).sum()
+                Zmass+=(mstars[isnii]*ej_abund_rates*time_step_length).sum()
 
         TotZmass = self.mass*self.Z + Zmass
         rel_masses = scipy.ndimage.map_coordinates(data.snii_dat['yield_rates']['m_ej'],
                                                    np.vstack((iages,iZs)),
-                                                   order=1)
-        self.mass += (rel_masses*mstars*time_step_length).sum()
+                                                   order=1,mode='constant',cval=0)
+        self.mass += (rel_masses*mstars[isnii]*time_step_length).sum()
         self.Z = TotZmass / self.mass
-        self.stars['mass']-=self.stars['mass']*rel_masses*time_step_length
+        self.stars['mass'][isnii]-=self.stars['mass'][isnii]*rel_masses*time_step_length
+        import pdb; pdb.set_trace()
 
 #        self.abunds,self.Z += snii(tnow, self.stars)
 #        self.abunds,self.Z += snia(tnow, self.stars)
