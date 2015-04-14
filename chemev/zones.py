@@ -32,7 +32,7 @@ class Zone():
         
         self.stars = np.append(self.stars,np.array([(time,mass,mass,self.Z)],dtype=data.star_type))
 
-    def enrich(self,time,time_step_length):
+    def enrich(self,time,time_step_length,gas_mass):
         """
         Loop through all the stars in the zone and enrich all the elements
         we are tracing for one timestep.
@@ -47,10 +47,12 @@ class Zone():
         iagb = (ages >= max_snii_age)
 
         #SNII enrichment
-        iages = np.interp(ages[isnii],data.snii_dat['times'][0],
-                          np.arange(len(data.snii_dat['times'][0]),dtype='f'))
-        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'],
-                        np.arange(len(data.snii_dat['Zs']),dtype='f'))
+        isort = np.argsort(data.snii_dat['times'][0])
+        indices = np.arange(len(data.snii_dat['times'][0]))
+        iages = np.interp(ages[isnii],data.snii_dat['times'][0][isort],indices[isort])
+        isort = np.argsort(data.snii_dat['Zs'])
+        indices = np.arange(len(data.snii_dat['Zs']))
+        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'][isort],indices[isort])
         Zmass = 0.0
         for el in self.abunds.keys():
             ej_abund_rates=scipy.ndimage.map_coordinates(data.snii_dat['yield_rates'][el],
@@ -64,10 +66,11 @@ class Zone():
         rel_masses = scipy.ndimage.map_coordinates(data.snii_dat['yield_rates']['m_ej'],
                                                    np.vstack((iages,iZs)),
                                                    order=1,mode='constant',cval=0)
-        self.mass += (rel_masses*mstars[isnii]*time_step_length).sum()
-        self.Z = TotZmass / self.mass
+        self.mass=gas_mass #+= (rel_masses*mstars[isnii]*time_step_length).sum()
+        if (self.mass >0): self.Z = TotZmass / self.mass
+        else:  self.Z = 0
         self.stars['mass'][isnii]-=self.stars['mass'][isnii]*rel_masses*time_step_length
-        import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
 
 #        self.abunds,self.Z += snii(tnow, self.stars)
 #        self.abunds,self.Z += snia(tnow, self.stars)

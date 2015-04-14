@@ -35,8 +35,9 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
 
         gas_mass = gas_mass_ev[it]
         sf_mass = sfh[it]
+
         for zone in disk_zones:
-            zone.enrich(time,time_step)
+            zone.enrich(time,time_step,gas_mass)
             if sf_mass >0: zone.form_star(time,sf_mode=sf_mode,mass=sf_mass)
             
     import pdb; pdb.set_trace()
