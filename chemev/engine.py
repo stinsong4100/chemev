@@ -5,18 +5,20 @@ engine
 The file that contains the functions that run the chemical evolution model.
 """
 
-import numpy as np, pickle, pdb
-import logging
+import numpy as np, pickle
+import logging, pdb
 from . import zones, data
 
 simfile = 'g1536_sfh+gas.pck'
 def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
         sf_mode='sim',init_abunds={'O':0,'Fe':0,'Mg':0}):
 
-    data.star_type = np.dtype({'names':['tform','init_mass','mass',
-                                        'Z'].extend(init_abunds.keys()),
-                               'formats':['f','f','f',
-                                          'f'].extend(len(init_abunds)*'f')})
+    star_names = ['tform','init_mass','mass','Z']
+    star_names.extend(init_abunds.keys())
+    st_formats = ['f','f','f','f']
+    st_formats.extend(len(init_abunds)*['f'])
+    data.star_type = np.dtype({'names':star_names,'formats':st_formats})
+
     disk_zones = zones.create_disk_zones(n_disk_zones,init_abunds=init_abunds)
 
     time_steps = np.arange(start_time,end_time,time_step)

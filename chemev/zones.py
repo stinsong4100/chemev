@@ -30,7 +30,8 @@ class Zone():
         Adds a new star to the zone.
         """
         
-        new_star = [time,mass,mass,self.Z].extend(self.abunds.values())
+        new_star = [time,mass,mass,self.Z]
+        new_star.extend(self.abunds.values())
         self.stars = np.append(self.stars,np.array([tuple(new_star)],
                                                    dtype=data.star_type))
 
@@ -49,14 +50,17 @@ class Zone():
         iagb = (ages >= max_snii_age)
 
         #SNII enrichment
-        iages = np.interp(ages[isnii],data.snii_dat['times'][0][isort],indices[isort])
-        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'][isort],indices[isort])
+        iages = np.interp(ages[isnii],data.snii_dat['times'][0][data.isnAgeSort],
+                          data.SNageIndices[data.isnAgeSort])
+        iZs = np.interp(Zs[isnii],data.snii_dat['Zs'][data.isnZsort],
+                        data.SNZindices[data.isnZsort])
         Zmass = 0.0
         for el in self.abunds.keys():
             ej_abund_rates=spnd.map_coordinates(data.snii_dat['yield_rates'][el],
                                     np.vstack((iages,iZs)),
                                     order=1,mode='constant',cval=0)
-            self.abunds[el]=(self.abunds[el]*self.mass + 
+            if self.mass >0: 
+                self.abunds[el]=(self.abunds[el]*self.mass + 
                              (mstars[isnii]*ej_abund_rates*
                               time_step_length).sum()) / self.mass
             if ((el != 'H') or (el !='He')):
@@ -68,24 +72,25 @@ class Zone():
         self.stars['mass'][isnii]-=self.stars['mass'][isnii]*rel_masses*time_step_length
 
         #AGB enrichment
-        iages = np.interp(ages[iagb],data.agb_dat['times'][0][isort],indices[isort])
-        iZs = np.interp(Zs[iagb],data.agb_dat['Zs'][isort],indices[isort])
+        iages = np.interp(ages[iagb],data.agb_dat['times'][0][data.iagbAgeSort],data.AGBageIndices[data.iagbAgeSort])
+        iZs = np.interp(Zs[iagb],data.agb_dat['Zs'][data.iagbZsort],data.AGBZindices[data.iagbZsort])
         Zmass = 0.0
         for el in self.abunds.keys():
             ej_abund_rates=spnd.map_coordinates(data.agb_dat['yield_rates'][el],
-                                    np.vstack((iages,iZs)),
-                                    order=1,mode='constant',cval=0)
-            self.abunds[el]=(self.abunds[el]*self.mass + 
-                             (mstars[iagb]*ej_abund_rates*
-                              time_step_length).sum()) / self.mass
+                                                np.vstack((iages,iZs)),
+                                                order=1,mode='constant',cval=0)
+            if self.mass >0: 
+                self.abunds[el]=(self.abunds[el]*self.mass + 
+                                 (mstars[iagb]*ej_abund_rates*
+                                  time_step_length).sum()) / self.mass
             if ((el != 'H') or (el !='He')):
                 Zmass+=(mstars[iagb]*ej_abund_rates*time_step_length).sum()
 
         rel_masses = spnd.map_coordinates(data.agb_dat['yield_rates']['m_ej'],
-                            np.vstack((iages,iZs)),
-                            order=1,mode='constant',cval=0)
+                                          np.vstack((iages,iZs)),
+                                          order=1,mode='constant',cval=0)
         self.stars['mass'][iagb]-=self.stars['mass'][iagb]*rel_masses*time_step_length
-
+#        import pdb; pdb.set_trace()
 
         TotZmass = self.mass*self.Z + Zmass
         self.mass=gas_mass #+= (rel_masses*mstars[isnii]*time_step_length).sum()
