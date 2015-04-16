@@ -1,5 +1,5 @@
 import numpy as np, pickle, pdb
-from . import starlifetime as slt, imf
+from . import zones,starlifetime as slt, imf
 
 mass_weighted_yields = {}
 def stellar_model_to_enrich_time(infile='ww95/lindner99.dat',Zsun_factor=0.02,
@@ -34,3 +34,5 @@ def stellar_model_to_enrich_time(infile='ww95/lindner99.dat',Zsun_factor=0.02,
 
     pickle.dump({'yield_rates':yield_rates,'times':times,'Zs':Zs},
                 open(outfile,'w'))
+
+
