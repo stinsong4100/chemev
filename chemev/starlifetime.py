@@ -40,7 +40,10 @@ def starMass(starLifetime, Z):
 #    if(b*b - 4*a*c < 0.0): return 1000 # time is too small for fitting formula
 
     logStarMass = (-b - np.sqrt(b*b - 4*a*c))/(2*a);
-    logStarMass[np.isnan(logStarMass)]=3
+    if hasattr(logStarMass, "__len__"): 
+        logStarMass[np.isnan(logStarMass)]=3
+    elif np.isnan(logStarMass): logStarMass = 3
+
     return 10.**logStarMass;
 
     

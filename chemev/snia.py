@@ -22,7 +22,7 @@ def dMSIMFSecInt (dMassB, dMass2, imf):
 # IMF of secondary in binary system that goes SN Ia
 # The distribution of secondary mass ratios is assumed to be a power
 # law, mu^dGamma as in Matteucci & Greggio (1986)
-def dMSIMFSec(dMass2):
+def dMSIMFSec(dMass2,imf):
     global dGamma_2nd, dMBin, dFracBinSNIa
     dNorm_2nd = 2.0**(1 + dGamma_2nd)*(1 + dGamma_2nd)  # Normalization
     # of 2ndary 
@@ -35,8 +35,8 @@ def dMSIMFSec(dMass2):
     if (dMass2_2 > dMBmin): Minf=dMass2_2
     else:Minf=dMBmin
 
-    dIMFSec = scipy.integrate.romberg(dMSIMFSecInt, Minf, Msup, args=[dMass2],
-                                      tol=EPSSNIA)
+    dIMFSec = scipy.integrate.romberg(dMSIMFSecInt, Minf, Msup, 
+                                      args=[dMass2,imf],tol=EPSSNIA)
     dIMFSec *= dFracBinSNIa * dNorm_2nd;
     return dIMFSec;
 
@@ -44,12 +44,13 @@ def dMSIMFSec(dMass2):
 # 315, 105, 1996) Returns number of SN Type Ia that occur during
 # timestep in which dMassT1 and dMassT2 are masses of stars that end
 # their lives at the end and beginning of timestep, respectively
-def NSNIa (dMassT1, dMassT2):
+def NSNIa (dMassT1, dMassT2, imf):
     global dMBmax
     # Exclude primaries that go SNII
     if (dMassT1 >= 0.5*dMBmax):
 	return 0.0
     if(dMassT2 > 0.5*dMBmax):
 	dMassT2 = 0.5*dMBmax
-    return scipy.integrate.romberg(dMSIMFSec, dMassT1, dMassT2, tol=EPSSNIA)
+    return scipy.integrate.romberg(dMSIMFSec, dMassT1, dMassT2, args=[imf], 
+                                   tol=EPSSNIA)
 

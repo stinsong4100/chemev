@@ -46,8 +46,8 @@ class Zone():
         """
         ages = time - self.stars['tform']
 
-        max_snii_age = slt.lifetime(8,0.02)
-        min_snii_age = slt.lifetime(80,0.02)
+        max_snii_age = slt.lifetime(8.0,0.02)
+        min_snii_age = slt.lifetime(80.,0.02)
         isnii = (ages-time_step_length < max_snii_age) & (ages > min_snii_age)
         iagb = (ages >= max_snii_age)
 

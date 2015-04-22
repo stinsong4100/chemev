@@ -1,10 +1,12 @@
 import numpy as np, pickle, pdb
-from . import starlifetime as slt, imf
+from . import starlifetime as slt, imf, snia
 import pdb
 
 mass_weighted_yields = {}
 global tables
 tables = {}
+min_SNII_mass = 8.0
+dMetals = 0.02
 
 def stellar_model_to_enrich_time(infile='ww95/lindner99.pck',Zsun_factor=0.02,
                                  outfile='snii_enrich.pck',imf=imf.Chabrier()):
@@ -119,3 +121,43 @@ def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
     tables[type]['times'] = times
     tables[type]['Zs'] = Zs[isortZs]
 
+def make_snia_table(time_steps,snia_model='Greggio1993',
+                    infile='iwamoto99/iwamoto99sniaW7.pck',
+                    imf=imf.Chabrier(),min_time_step=1e8):
+
+    dat = pickle.load(open(infile))
+    el_yield=dat['element_yield']
+
+    sim_time_ranges = np.vstack((time_steps[:-1],time_steps[1:]))
+    sim_time_bin_size = np.mean(np.diff(sim_time_ranges,axis=0))
+    
+    time_step = np.min([sim_time_bin_size,min_time_step])
+    maxSNII_lifetime = slt.lifetime(min_SNII_mass,dMetals)
+
+    dMtot = imf.cum_mass(0)
+
+    snia_ts = np.arange(maxSNII_lifetime, np.max(time_steps),time_step)
+    #snia_ts = np.logspace(np.log10(maxSNII_lifetime), 
+    #                 np.log10(np.max(time_steps)),50)
+    nsnias = np.zeros(len(snia_ts))
+
+    if snia_model == 'Greggio1993':
+        for it,time in enumerate(snia_ts):
+            dMStarMin = slt.starMass(time+time_step, dMetals)
+            dMStarMax = slt.starMass(time, dMetals)
+            
+            nsnias[it] = snia.NSNIa(dMStarMin,dMStarMax,imf) / dMtot
+
+    elif snia_model == 'Maoz':
+        # integral of 3.75e-3*ts**-1.12
+        nsnias=-3.75e-3/0.12*snia_ts[1:]**-0.12 + \
+            3.75e-3/0.12*snia_ts[:-1]**-0.12
+
+    yield_rates = {}
+    for el in dat['element_yield'].keys():
+        yield_rates[el] = nsnias*dat['element_yield'][el]
+        
+    tables['snia'] = {}
+    tables['snia']['yield_rates'] = yield_rates
+    tables['snia']['times'] = snia_ts
+    tables['snia']['Zs'] = np.array([0.02])

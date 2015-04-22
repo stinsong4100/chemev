@@ -12,8 +12,11 @@ for ii,iso in enumerate(isos):
     isotope_yield[ciso] = prods[ii]
         
 for iso in isotope_yield.keys():
-    element = iso[2:]
-    element_yield[element] = isotope_yield[iso]
+    element = iso.split('^')[-1]
+    try:
+        element_yield[element] += isotope_yield[iso]
+    except:
+        element_yield[element] = isotope_yield[iso]
 
 pickle.dump({'element_yield':element_yield,'isotope_yield':isotope_yield},
             open('iwamoto99sniaW7.pck','w'))
