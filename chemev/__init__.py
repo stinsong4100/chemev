@@ -91,7 +91,7 @@ you can customize the behaviour. See here https://docs.python.org/2/howto/loggin
 
 
 # Import subpackages
-from . import engine, snii, starlifetime, zones, agb, enrich, snia, star, imf, data
+from . import engine, snii, starlifetime, zones, agb, enrich, snia, star, imf
 
 try:
     from . import plot
@@ -110,7 +110,6 @@ imp.reload(star)
 imp.reload(starlifetime)
 imp.reload(enrich)
 imp.reload(zones)
-imp.reload(data)
 
 try:
     imp.reload(plot)

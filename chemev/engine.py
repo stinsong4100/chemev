@@ -7,7 +7,7 @@ The file that contains the functions that run the chemical evolution model.
 
 import numpy as np, pickle
 import logging, pdb
-from . import zones, data
+from . import zones, enrich
 
 simfile = 'g1536_sfh+gas.pck'
 def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
@@ -19,13 +19,16 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
     star_names.extend(init_abunds.keys())
     st_formats = ['f','f','f','f']
     st_formats.extend(len(init_abunds)*['f'])
-    data.star_type = np.dtype({'names':star_names,'formats':st_formats})
+    zones.star_type = np.dtype({'names':star_names,'formats':st_formats})
 
     disk_zones = zones.create_disk_zones(n_disk_zones,init_abunds=init_abunds,
                                          max_disk_r=max_disk_r,
                                          disk_gas_mass=disk_gas_mass,h_r=h_r)
 
     time_steps = np.arange(start_time,end_time,time_step)
+
+    enrich.make_table('agb',time_steps,infile='karakas10/karakas2010.pck',Zsun_factor=1)
+    enrich.make_table('snii',time_steps)
 
     if sf_mode == 'sim':
     #Read in SFH and disk gas mass evolution
