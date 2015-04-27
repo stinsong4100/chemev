@@ -5,14 +5,15 @@ engine
 The file that contains the functions that run the chemical evolution model.
 """
 
-import numpy as np, pickle
+import numpy as np, pickle, pyfits
 import logging, pdb
 from . import zones, enrich
 
 simfile = 'g1536_sfh+gas.pck'
 def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
         max_disk_r=25,disk_gas_mass=1e10,h_r=4,
-        sf_mode='sim',init_abunds={'O':0,'Fe':0,'Mg':0}):
+        sf_mode='sim',init_abunds={'O':0,'Fe':0,'Mg':0},
+        outfits='simstar.fits'):
 
     # Dynamically create star type depending on how many elemental abundances
     # are being tracked.
@@ -67,4 +68,8 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
             sf_mass = sf_mass_tot * zone.mass / gas_mass
             if sf_mass >0: zone.form_star(time,sf_mode=sf_mode,mass=sf_mass)
             
-    import pdb; pdb.set_trace()
+    for zone in disk_zones:
+        try:
+            pyfits.append(outfits,zone.stars)
+        except:
+            pyfits.writeto(outfits,zone.stars)

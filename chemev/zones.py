@@ -7,7 +7,7 @@ in the chemical evolution models.
 """
 
 import numpy as np, scipy.ndimage as spnd
-import logging
+import logging, pdb
 from . import enrich, starlifetime as slt, star#.Star
 
 global star_type
@@ -51,35 +51,36 @@ class Zone():
         isnii = (ages-time_step_length < max_snii_age) & (ages > min_snii_age)
         iagb = (ages >= max_snii_age)
 
-        Zmass = 0
+        self.mass=gas_mass #+=(rel_masses*mstars[isnii]*time_step_length).sum()
+
+#        pdb.set_trace()
         #SNII enrichment
-        Zmass += self.enrichment(ages,isnii,'snii',time_step_length)
+        snii_Zmass = self.enrichment(ages,isnii,'snii',time_step_length)
 
         #AGB enrichment
-        Zmass += self.enrichment(ages,iagb,'agb',time_step_length)
+        agb_Zmass = self.enrichment(ages,iagb,'agb',time_step_length)
 
         #SNIa enrichment
-#        import pdb; pdb.set_trace()
+        snia_Zmass = self.enrichment(ages,iagb,'snia',time_step_length)
 
-        TotZmass = self.mass*self.Z + Zmass
-        self.mass=gas_mass #+= (rel_masses*mstars[isnii]*time_step_length).sum()
+        print "Z Enrichment:  SNII:  %g   AGB:  %g  SNIa:  %g"%(snii_Zmass,agb_Zmass,snia_Zmass)
+
+        TotZmass = self.mass*self.Z + snii_Zmass + agb_Zmass + snia_Zmass
         if (self.mass >0): self.Z = TotZmass / self.mass
         else:  self.Z = 0
-#        import pdb; pdb.set_trace()
-
-#        self.abunds,self.Z += snii(tnow, self.stars)
-#        self.abunds,self.Z += snia(tnow, self.stars)
-#        self.abunds,self.Z += agb(tnow, self.stars)
 
     def enrichment(self,ages, indices, type, time_step_length):
-        iages = np.interp(ages[indices],
-                          enrich.tables[type]['times'][0],
-                          np.arange(len(enrich.tables[type]['times'][0])))
+        if len(enrich.tables[type]['times'].shape) < 2:
+            etimes = enrich.tables[type]['times']
+        else:  etimes = enrich.tables[type]['times'][0]
+
+        iages = np.interp(ages[indices],etimes,np.arange(len(etimes)))
         iZs = np.interp(self.stars['Z'][indices],enrich.tables[type]['Zs'],
                         np.arange(len(enrich.tables[type]['Zs'])))
+
         for el in self.abunds.keys():
             ej_abund_rates=spnd.map_coordinates(enrich.tables[type]['yield_rates'][el],
-                                    np.vstack((iages,iZs)),
+                                    np.vstack((iZs,iages)),
                                     order=1,mode='constant',cval=0)
             if self.mass >0: 
                 self.abunds[el]=(self.abunds[el]*self.mass + 
@@ -87,11 +88,11 @@ class Zone():
                               time_step_length).sum()) / self.mass
 
         rel_masses = spnd.map_coordinates(enrich.tables[type]['yield_rates']['m_ej'],
-                            np.vstack((iages,iZs)),
+                            np.vstack((iZs,iages)),
                             order=1,mode='constant',cval=0)
         self.stars['mass'][indices]-=self.stars['mass'][indices]*rel_masses*time_step_length
         Z_masses = spnd.map_coordinates(enrich.tables[type]['yield_rates']['Z'],
-                                        np.vstack((iages,iZs)),
+                                        np.vstack((iZs,iages)),
                                         order=1,mode='constant',cval=0)
         return (self.stars['mass'][indices]*Z_masses*time_step_length).sum()
 

@@ -58,14 +58,31 @@ def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
     
     sim_time_ranges = np.vstack((time_steps[:-1],time_steps[1:]))
     sim_time_bin_size = np.mean(np.diff(sim_time_ranges,axis=0))
+
+    added_min_mass=False
     
     dat = pickle.load(open(infile))
 
     el_yield=dat['element_yield']
     ms=dat['masses']
+        
     Zs=np.array(dat['Zs'])*Zsun_factor
     isortZs = np.argsort(Zs)
     
+    if (type == 'snii') and (np.min(ms) > min_SNII_mass):
+        extr_ms = np.arange(min_SNII_mass,np.min(ms),1)
+        for el in el_yield.keys():
+            extrap_yield = np.zeros((len(Zs),len(extr_ms)))
+            new_yields = np.zeros((len(Zs),len(ms)+len(extr_ms)))
+            for iZ,met in enumerate(Zs):
+                fit = np.polyfit(ms,el_yield[el][iZ,:],2)
+                line = np.poly1d(fit)
+                new_yields[iZ,:] = np.concatenate([np.maximum(0,line(extr_ms)),el_yield[el][iZ,:]])
+            el_yield[el] = new_yields
+        ms = np.insert(ms,0,extr_ms)
+        pdb.set_trace()
+
+
     imfTotalMass = imf.cum_mass(0)
     imf_at_ejms = imf.imf(ms)
 
@@ -118,29 +135,37 @@ def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
         tables[type] = {}
         tables[type]['yield_rates'] = yield_rates
 
+    pdb.set_trace()
     tables[type]['times'] = times
     tables[type]['Zs'] = Zs[isortZs]
 
-def make_snia_table(time_steps,snia_model='Greggio1993',
+def make_snia_table(time_steps,snia_model='Maoz',
                     infile='iwamoto99/iwamoto99sniaW7.pck',
                     imf=imf.Chabrier(),min_time_step=1e8):
 
     dat = pickle.load(open(infile))
     el_yield=dat['element_yield']
+    Zs  = np.array(dat['Zs'])
+    isortZs = np.argsort(Zs)
 
-    sim_time_ranges = np.vstack((time_steps[:-1],time_steps[1:]))
-    sim_time_bin_size = np.mean(np.diff(sim_time_ranges,axis=0))
-    
-    time_step = np.min([sim_time_bin_size,min_time_step])
     maxSNII_lifetime = slt.lifetime(min_SNII_mass,dMetals)
 
+    if min_time_step == 'log':
+        snia_ts = np.logspace(np.log10(maxSNII_lifetime), 
+                              np.log10(np.max(time_steps)),50)
+        time_ranges = np.vstack((snia_ts[:-1],snia_ts[1:]))
+        time_step = np.diff(time_ranges,axis=0)
+    else:
+        sim_time_ranges = np.vstack((time_steps[:-1],time_steps[1:]))
+        sim_time_bin_size = np.mean(np.diff(sim_time_ranges,axis=0))
+        time_step = np.max([sim_time_bin_size,min_time_step])
+        snia_ts = np.arange(maxSNII_lifetime, np.max(time_steps),time_step)
+    
     dMtot = imf.cum_mass(0)
 
-    snia_ts = np.arange(maxSNII_lifetime, np.max(time_steps),time_step)
-    #snia_ts = np.logspace(np.log10(maxSNII_lifetime), 
-    #                 np.log10(np.max(time_steps)),50)
     nsnias = np.zeros(len(snia_ts))
 
+    print 'Calculating %d SNIa rates'%(len(snia_ts))
     if snia_model == 'Greggio1993':
         for it,time in enumerate(snia_ts):
             dMStarMin = slt.starMass(time+time_step, dMetals)
@@ -149,15 +174,15 @@ def make_snia_table(time_steps,snia_model='Greggio1993',
             nsnias[it] = snia.NSNIa(dMStarMin,dMStarMax,imf) / dMtot
 
     elif snia_model == 'Maoz':
-        # integral of 3.75e-3*ts**-1.12
+        # Definite integral of 3.75e-3*ts**-1.12 for all time intervals
         nsnias=-3.75e-3/0.12*snia_ts[1:]**-0.12 + \
             3.75e-3/0.12*snia_ts[:-1]**-0.12
 
     yield_rates = {}
     for el in dat['element_yield'].keys():
-        yield_rates[el] = nsnias*dat['element_yield'][el]
-        
+        yield_rates[el] = nsnias*dat['element_yield'][el][np.newaxis].T / time_step
+
     tables['snia'] = {}
     tables['snia']['yield_rates'] = yield_rates
     tables['snia']['times'] = snia_ts
-    tables['snia']['Zs'] = np.array([0.02])
+    tables['snia']['Zs'] = Zs[isortZs]
