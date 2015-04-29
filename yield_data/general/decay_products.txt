@@ -11,6 +11,7 @@ Isotope		Decay Product
 ^10^Be		^10^B
 ^10^B 		^10^B 
 ^11^B 		^11^B 
+^11^C 		^12^C 
 ^12^C 		^12^C 
 ^13^C 		^13^C 
 ^14^C 		^14^N 
