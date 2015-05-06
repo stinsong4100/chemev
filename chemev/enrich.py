@@ -53,8 +53,8 @@ def stellar_model_to_enrich_time(infile='ww95/lindner99.pck',Zsun_factor=0.02,
 
 
 
-def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
-               imf=imf.Chabrier()):
+def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
+               imf=imf.Chabrier(),plot=False):
     
     sim_time_ranges = np.vstack((time_steps[:-1],time_steps[1:]))
     sim_time_bin_size = np.mean(np.diff(sim_time_ranges,axis=0))
@@ -66,18 +66,37 @@ def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
     el_yield=dat['element_yield']
     ms=dat['masses']
         
-    Zs=np.array(dat['Zs'])*Zsun_factor
+    Zs=np.array(dat['Zs'])   #Zs in mass fraction, NOT fraction of solar
     isortZs = np.argsort(Zs)
     
-    if (type == 'snii') and (np.min(ms) > min_SNII_mass):
+    if plot:
+        import pylab as plt
+        colors=['r','g','b','m','k','y','c']
+        nplots = len(el_yield)
+        nrows = np.int(np.ceil(nplots / 4))
+        f,ax = plt.subplots(nrows,4,sharex=True,figsize=(8,nrows*2+2))
+        f.subplots_adjust(top=0.99,hspace=0)
+
+        m_range = np.arange(min_SNII_mass,50,1)
+
+    if (((type == 'snii') and (np.min(ms) > min_SNII_mass)) or plot):
         extr_ms = np.arange(min_SNII_mass,np.min(ms),1)
-        for el in el_yield.keys():
+        for iel, el in enumerate(el_yield.keys()):
             extrap_yield = np.zeros((len(Zs),len(extr_ms)))
             new_yields = np.zeros((len(Zs),len(ms)+len(extr_ms)))
+
             for iZ,met in enumerate(Zs):
                 fit = np.polyfit(ms,el_yield[el][iZ,:],2)
                 line = np.poly1d(fit)
                 new_yields[iZ,:] = np.concatenate([np.maximum(0,line(extr_ms)),el_yield[el][iZ,:]])
+                if plot: 
+                    c = colors[iZ]
+                    ir = iel/4
+                    ic = np.mod(iel,4)
+                    ax[ir,ic].plot(ms,el_yield[el],'o',color=c)
+                    ax[ir,ic].text(0.02,0.85,el,transform=ax[iel].transAxes)
+                    ax[ir,ic].plot(m_range,line(m_range),color=c)
+                    ax[ir,ic].plot(extr_ms,line(extr_ms),'o',mfc=None,mec=c)
             el_yield[el] = new_yields
         ms = np.insert(ms,0,extr_ms)
         pdb.set_trace()
@@ -140,7 +159,7 @@ def make_table(type,time_steps,infile='ww95/lindner99.pck',Zsun_factor=0.02,
     tables[type]['Zs'] = Zs[isortZs]
 
 def make_snia_table(time_steps,snia_model='Maoz',
-                    infile='iwamoto99/iwamoto99sniaW7.pck',
+                    infile='yields/snia/iwamoto.pck',
                     imf=imf.Chabrier(),min_time_step=1e8):
 
     dat = pickle.load(open(infile))

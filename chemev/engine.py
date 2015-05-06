@@ -5,7 +5,7 @@ engine
 The file that contains the functions that run the chemical evolution model.
 """
 
-import numpy as np, pickle, pyfits
+import numpy as np, pickle, pyfits, os
 import logging, pdb
 from . import zones, enrich
 
@@ -13,6 +13,7 @@ simfile = 'g1536_sfh+gas.pck'
 def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
         max_disk_r=25,disk_gas_mass=1e10,h_r=4,
         sf_mode='sim',init_abunds={'O':0,'Fe':0,'Mg':0},
+        snii_yields='kobayashi',snia_yields='iwamoto',agb_yields='karakas',
         outfits='simstar.fits'):
 
     # Dynamically create star type depending on how many elemental abundances
@@ -33,9 +34,13 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
     time_steps = np.arange(start_time,end_time,time_step)
 
     # Set up AGB and SNII enrichment models
-    enrich.make_table('agb',time_steps,infile='karakas10/karakas2010.pck',Zsun_factor=1)
-    enrich.make_table('snii',time_steps)
-    enrich.make_snia_table(time_steps)
+    mydir=os.path.dirname(__file__)
+    enrich.make_table('agb',time_steps,
+                      infile=mydir+'/yields/agb/'+agb_yields+'.pck')
+    enrich.make_table('snii',time_steps,
+                      infile=mydir+'/yields/snii/'+snii_yields+'.pck')
+    enrich.make_snia_table(time_steps,
+                           infile=mydir+'/yields/snia/'+sniao_yields+'.pck')
 
     if sf_mode == 'sim':
     #Read in SFH and disk gas mass evolution

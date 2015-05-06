@@ -2,7 +2,7 @@ import numpy as np, pickle, pdb
 
 infiles = ['Z0.txt','Z0.001.txt','Z0.004.txt','Z0.02.txt']
 Zs = [0 ,0.001,0.004,0.02]
-masses = np.array([13,15,18,20,25,30,40])
+masses = np.array([13.,15.,18.,20.,25.,30.,40.])
 
 # load decay products
 pre,post = np.genfromtxt('../general/decay_products.txt',skip_header=1,dtype='string',unpack=True)
@@ -38,6 +38,6 @@ element_yield['m_ej'] = isotope_yield['m_ej']
 
     
 pickle.dump({'isotope_yield':isotope_yield,'element_yield':element_yield,
-             'masses':masses,'Zs':np.array(Zs)},open('ww95.pck','w'))
+             'masses':masses,'Zs':np.array(Zs)},open('kobayashi.pck','w'))
 
 pdb.set_trace()
