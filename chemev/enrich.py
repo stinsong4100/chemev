@@ -75,8 +75,8 @@ def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
         nplots = len(el_yield)
         ncols = 6
         nrows = np.int(np.ceil(np.float(nplots) / ncols))
-        f,ax = plt.subplots(nrows,ncols,sharex=True,figsize=(8,nrows*2+2))
-        f.subplots_adjust(top=0.99,hspace=0,bottom=0.96)
+        f,ax = plt.subplots(nrows,ncols,sharex=True,figsize=(12,nrows*2+2))
+        f.subplots_adjust(top=0.99,hspace=0,bottom=0.04,right=0.99)
 
         m_range = np.arange(min_SNII_mass,50,1)
 
@@ -97,7 +97,7 @@ def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
                     ax[ir,ic].plot(ms,el_yield[el][iZ,:],'o',color=c)
                     ax[ir,ic].text(0.02,0.85,el,transform=ax[ir,ic].transAxes)
                     ax[ir,ic].plot(m_range,line(m_range),color=c)
-                    ax[ir,ic].plot(extr_ms,line(extr_ms),'o',mfc=None,mec=c)
+                    ax[ir,ic].plot(extr_ms,line(extr_ms),'o',color=None,mfc=None,mec=c)
             el_yield[el] = new_yields
         ms = np.insert(ms,0,extr_ms)
 #        pdb.set_trace()
