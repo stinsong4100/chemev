@@ -73,9 +73,10 @@ def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
         import pylab as plt
         colors=['r','g','b','m','k','y','c']
         nplots = len(el_yield)
-        nrows = np.int(np.ceil(nplots / 4))
-        f,ax = plt.subplots(nrows,4,sharex=True,figsize=(8,nrows*2+2))
-        f.subplots_adjust(top=0.99,hspace=0)
+        ncols = 6
+        nrows = np.int(np.ceil(np.float(nplots) / ncols))
+        f,ax = plt.subplots(nrows,ncols,sharex=True,figsize=(8,nrows*2+2))
+        f.subplots_adjust(top=0.99,hspace=0,bottom=0.96)
 
         m_range = np.arange(min_SNII_mass,50,1)
 
@@ -91,16 +92,17 @@ def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
                 new_yields[iZ,:] = np.concatenate([np.maximum(0,line(extr_ms)),el_yield[el][iZ,:]])
                 if plot: 
                     c = colors[iZ]
-                    ir = iel/4
-                    ic = np.mod(iel,4)
-                    ax[ir,ic].plot(ms,el_yield[el],'o',color=c)
-                    ax[ir,ic].text(0.02,0.85,el,transform=ax[iel].transAxes)
+                    ir = np.int(np.floor(iel/ncols))
+                    ic = np.mod(iel,ncols)
+                    ax[ir,ic].plot(ms,el_yield[el][iZ,:],'o',color=c)
+                    ax[ir,ic].text(0.02,0.85,el,transform=ax[ir,ic].transAxes)
                     ax[ir,ic].plot(m_range,line(m_range),color=c)
                     ax[ir,ic].plot(extr_ms,line(extr_ms),'o',mfc=None,mec=c)
             el_yield[el] = new_yields
         ms = np.insert(ms,0,extr_ms)
-        pdb.set_trace()
+#        pdb.set_trace()
 
+    if plot: f.savefig('elements.png')
 
     imfTotalMass = imf.cum_mass(0)
     imf_at_ejms = imf.imf(ms)
