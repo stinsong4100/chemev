@@ -40,7 +40,7 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
     enrich.make_table('snii',time_steps,
                       infile=mydir+'/yields/snii/'+snii_yields+'.pck')
     enrich.make_snia_table(time_steps,
-                           infile=mydir+'/yields/snia/'+sniao_yields+'.pck')
+                           infile=mydir+'/yields/snia/'+snia_yields+'.pck')
 
     if sf_mode == 'sim':
     #Read in SFH and disk gas mass evolution
@@ -78,3 +78,5 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
             pyfits.append(outfits,zone.stars)
         except:
             pyfits.writeto(outfits,zone.stars)
+
+    return disk_zones
