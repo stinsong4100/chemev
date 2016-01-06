@@ -6,6 +6,11 @@ The file that contains the functions that run the chemical evolution model.
 """
 
 import numpy as np, pickle, pyfits, os
+try:
+    import pynbody
+    have_pynbody = True
+except:
+    have_pynbody = False
 import logging, pdb
 from . import zones, enrich
 
@@ -16,14 +21,16 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
         snii_yields='kobayashi',snia_yields='iwamoto',agb_yields='karakas',
         outfits='simstar.fits'):
 
+    star_names = ['tform','init_mass','mass','Z','zone']
+    star_names.extend(init_abunds.keys())
+
+    if not have_pynbody:
     # Dynamically create star type depending on how many elemental abundances
     # are being tracked.
-    star_names = ['tform','init_mass','mass','Z']
-    star_names.extend(init_abunds.keys())
-    st_formats = ['f','f','f','f']
-    st_formats.extend(len(init_abunds)*['f'])
-    zones.star_type = np.dtype({'names':star_names,'formats':st_formats})
-
+        st_formats = ['f','f','f','f']
+        st_formats.extend(len(init_abunds)*['f'])
+        zones.star_type = np.dtype({'names':star_names,'formats':st_formats})
+        
     # Set up geometry
     max_disk_r, h_r = float(max_disk_r), float(h_r)
     disk_zones = zones.create_disk_zones(n_disk_zones,init_abunds=init_abunds,
@@ -32,6 +39,16 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
 
     # Set up timesteps
     time_steps = np.arange(start_time,end_time,time_step)
+    n_t_steps = len(time_steps)
+
+    stars = pynbody.snapshot.SimSnap()
+    stars._num_particles = n_disk_zones*n_t_steps
+    stars._filename = "<created>"
+    stars._create_arrays(star_names,1)
+    stars._family_slice['star'] = slice(0,n_disk_zones*n_t_steps)
+    for iz,zone in enumerate(disk_zones):
+        stars[iz*n_t_steps:(iz+1)*n_t_steps]['zone'] = iz
+        stars[iz*n_t_steps:(iz+1)*n_t_steps]['tform'] = time_steps
 
     # Set up AGB and SNII enrichment models
     mydir=os.path.dirname(__file__)
@@ -65,18 +82,31 @@ def run(n_disk_zones=1,start_time=0,end_time=13.73e9,time_step=1e7,
                                 np.exp(-max_disk_r/h_r)*
                                 (h_r+max_disk_r)))
         prefac = np.pi*2.0*h_r*Sigma0
+        
+        # All zones will have the same star ages as the first one.
+        ages = time - stars[0:it]['tform']
 
-        for zone in disk_zones:
+        for iz,zone in enumerate(disk_zones):
+            izstar = np.arange(iz*n_t_steps,iz*n_t_steps+it)
+
             zone_gas_mass = prefac*(np.exp(-zone.min_r/h_r)*(h_r+zone.min_r) - 
                                 np.exp(-zone.max_r/h_r)*(h_r+zone.max_r))
-            zone.enrich(time,time_step,zone_gas_mass)
-            sf_mass = sf_mass_tot * zone.mass / gas_mass
-            if sf_mass >0: zone.form_star(time,sf_mode=sf_mode,mass=sf_mass)
-            
-    for zone in disk_zones:
-        try:
-            pyfits.append(outfits,zone.stars)
-        except:
-            pyfits.writeto(outfits,zone.stars)
 
-    return disk_zones
+            rel_masses = zone.enrich(ages,stars[izstar]['Z'],
+                                     stars[izstar]['mass'],
+                                     time_step,zone_gas_mass)
+            stars[izstar]['mass']-=stars[izstar]['mass']*rel_masses*time_step
+
+            sf_mass = sf_mass_tot * zone.mass / gas_mass
+            if sf_mass >0: 
+                # Initialize new star
+                istar = iz*n_t_steps+it
+                stars[istar]['init_mass'] = sf_mass
+                stars[istar]['mass'] = sf_mass
+                stars[istar]['Z'] = zone.Z
+                for el in init_abunds:
+                    stars[istar][el] = zone.abunds[el]
+
+    stars.write(filename='stars.tips',fmt=pynbody.snapshot.tipsy.TipsySnap)
+
+    return stars,disk_zones

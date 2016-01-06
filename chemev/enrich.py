@@ -49,7 +49,7 @@ def stellar_model_to_enrich_time(infile='ww95/lindner99.pck',Zsun_factor=0.02,
                  'time_bin_sizes':time_bin_sizes,'Zs':np.array(Zs)},
                 open(outfile,'w'))
 
-    pdb.set_trace()
+#    pdb.set_trace()
 
 
 
@@ -156,7 +156,7 @@ def make_table(type,time_steps,infile='yields/snii/kobayashi.pck',
         tables[type] = {}
         tables[type]['yield_rates'] = yield_rates
 
-    pdb.set_trace()
+#    pdb.set_trace()
     tables[type]['times'] = times
     tables[type]['Zs'] = Zs[isortZs]
 
